@@ -1,0 +1,206 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>ゲーム</title>
+        <style>
+body{
+    margin:0;
+}
+#display{
+    width:100%;
+    height:75vh;
+    filter:blur(12px);
+    text-align:right;
+    font-size:1.5em;
+}
+.status{
+    margin:1em;
+}
+#control{
+    width:100%;
+    height:25vh;
+    text-align:center;
+    background:gray;
+    overflow-y:auto;
+    box-sizing:border-box;
+    padding:1em;
+}
+#control .main{
+    width:40%;
+    text-align:start;
+    display:inline-block;
+}
+#end{
+    width:100%;
+    height:10vh;
+    line-height:10vh;
+    background:gray;
+    text-align:center;
+}
+.r{
+    position:absolute;
+    left:25vw;
+    width:50%;
+    height:15px;
+    background:gray;
+}
+.cl,.cr{
+    position:absolute;
+    height:20vh;
+    width:15px;
+    background:gray;
+}
+.cr{
+    left:calc(75vw - 15px);
+}
+.cl{
+    left:25vw;
+}
+#start,#retry{
+    font-size:2em;
+}
+#horror{
+    background:url("https://media.wired.jp/photos/61ced9f6e533d60bb2d60f0a/master/w_2560%2Cc_limit/674e8ec3573b95d9a0fe95261c0e27b4.jpg");
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100vh;
+    background-position:center;
+    display:none;
+}
+#horror.inverted{
+    filter:brightness(0);
+}
+        </style>
+    </head>
+    <body>
+        <div id="display">
+            <div id="end">ゴール</div>
+            <div class="status">
+                タイム：
+                <br>
+                <span id="times">40</span>秒
+            </div>
+            <div class="point r" style="top:20vh"></div>
+            <div class="point r" style="top:40vh"></div>
+            <div class="point r" style="top:60vh"></div>
+            <div class="point cl" style="top:20vh"></div>
+            <div class="point cl" style="top:60vh"></div>
+            <div class="point cr" style="top:0vh"></div>
+            <div class="point cr" style="top:40vh"></div>
+        </div>
+        <div id="control">
+            <div class="main">
+                やり方：<br>
+                <li>ゲームを開始します。</li>
+                <li>白い部分に触れずに、ゴールまでたどり着いてください。</li>
+                <br>
+            </div>
+            <br>
+            <input type="button" value="ゲームを開始" id="start">
+        </div>
+        <div id="horror">
+            <audio src="https://um6bit.kikirara.jp/angel/opp/sotugyou/fe/urur.mp3" id="horror-audio1" loop></audio>
+            <audio src="https://um6bit.kikirara.jp/angel/opp/sotugyou/2.mp3" id="horror-audio2" loop></audio>
+        </div>
+        <script>
+let isPlaying=false;
+let countNum=400;
+let isImageClicked=false;
+let url={};
+location.search.substring(1).split("&").forEach(function(obj){
+    if(obj){
+        url[obj.split("=")[0]]=obj.split("=")[1];
+    }
+});
+let visitCount=Number(url.visitCount)||1;
+function id(id){
+    return document.getElementById(id);
+}
+window.onmousemove=function(e){
+    if(isPlaying){
+        if(e.target.id=="display"){
+            gameover();
+        }
+        if(e.target.id=="end"){
+            let isPointOver=true;
+            for(let point of document.querySelectorAll(".point")){
+                if(!point.classList.contains("over")){
+                    isPointOver=false;
+                    break;
+                }
+            }
+            if(isPointOver){
+                id("display").style.filter="blur(12px)";
+                id("control").innerHTML=`<h2>ゲームクリア</h2>
+    スコア：${(400-countNum)/10}秒<br>
+    <br>
+    <input type="button" value="リトライ" id="retry">`;
+                id("retry").onclick=function(){
+                    location.search=`visitCount=${visitCount+1}`;
+                }
+                isPlaying=false;
+            }
+            else{
+                horror();
+            }
+        }
+    }
+}
+document.querySelectorAll(".point").forEach(function(element){
+    element.onmouseover=function(){
+        if(isPlaying){
+            element.classList.add("over");
+        }
+    }
+});
+function gameover(){
+    id("display").style.filter="blur(12px)";
+    id("control").innerHTML=`<h2>ゲームオーバー</h2>
+リトライしましょう。<br>
+<br>
+<input type="button" value="リトライ" id="retry">`;
+    id("retry").onclick=function(){
+        location.search=`visitCount=${visitCount+1}`;
+    }
+    isPlaying=false;
+}
+setInterval(function(){
+    if(isPlaying){
+        if(countNum>0){
+            countNum--;
+            id("times").innerHTML=countNum/10;
+        }
+        else{
+            gameover();
+        }
+    }
+},100);
+setInterval(function(){
+    if(isImageClicked){
+        id("horror").classList.toggle("inverted");
+    }
+},10);
+id("start").onclick=function(){
+    isPlaying=true;
+    id("display").style.filter="none";
+    id("control").innerHTML="";
+    setTimeout(function(){
+        if(visitCount>=3&&isPlaying){
+            horror();
+        }
+    },30000);
+}
+function horror(){
+    id("horror").style.display="block";
+    id("horror-audio1").play();
+    id("horror-audio2").play();
+    isPlaying=false;
+    setTimeout(function(){
+        isImageClicked=true;
+    },2000);
+}
+        </script>
+    </body>
+</html>
