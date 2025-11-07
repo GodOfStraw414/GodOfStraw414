@@ -69,6 +69,7 @@ body{
     height:100vh;
     background-position:center;
     display:none;
+    font-size:2em;
 }
 #horror.inverted{
     filter:brightness(0);
@@ -201,6 +202,15 @@ function horror(){
     setTimeout(function(){
         isImageClicked=true;
     },3000);
+    let textInterval=setInterval(function(){
+        let text=document.createElement("span");
+        text.innerHTML="呪";
+        id("horror").appendChild(text);
+        if(text.getBoundingClientRect().y>window.innerHeight){
+            text.remove();
+            clearInterval(textInterval);
+        }
+    },1000);
 }
         </script>
     </body>
